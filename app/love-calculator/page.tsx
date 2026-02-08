@@ -125,9 +125,9 @@ export default function LoveCalculatorPage() {
           <p className="text-xl text-muted-foreground">Discover your compatibility magic ✨</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-5 gap-8">
           {/* Calculator Card */}
-          <div className="md:col-span-1">
+          <div className="md:col-span-2">
             <div className="backdrop-blur-xl bg-background/80 rounded-3xl shadow-2xl border-2 border-rose-200/50 p-8 sticky top-8">
               <form onSubmit={handleCalculate} className="space-y-6">
                 <div className="space-y-2">
@@ -139,7 +139,7 @@ export default function LoveCalculatorPage() {
                     value={name1}
                     onChange={(e) => setName1(e.target.value)}
                     placeholder="Your name"
-                    className="h-12 border-2 border-rose-200/50 focus:border-rose-400 text-center"
+                    className="h-14 text-lg border-2 border-rose-200/50 focus:border-rose-400 text-center"
                   />
                 </div>
 
@@ -163,7 +163,7 @@ export default function LoveCalculatorPage() {
                     value={name2}
                     onChange={(e) => setName2(e.target.value)}
                     placeholder="Their name"
-                    className="h-12 border-2 border-rose-200/50 focus:border-rose-400 text-center"
+                    className="h-14 text-lg border-2 border-rose-200/50 focus:border-rose-400 text-center"
                   />
                 </div>
 
@@ -227,7 +227,7 @@ export default function LoveCalculatorPage() {
           </div>
 
           {/* History */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-3">
             <div className="backdrop-blur-xl bg-background/80 rounded-3xl shadow-2xl border-2 border-rose-200/50 p-8">
               <h2 className="text-2xl font-bold mb-6 text-rose-600 dark:text-rose-400">Recent Searches</h2>
 
@@ -263,6 +263,11 @@ export default function LoveCalculatorPage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-16 text-center text-sm text-muted-foreground">
+          <p>Made with <span className="text-rose-500">❤️</span> by Aswin, Amal & his <span className="text-rose-500">❤️</span></p>
         </div>
       </div>
     </div>

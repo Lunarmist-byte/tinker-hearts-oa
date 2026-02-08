@@ -221,7 +221,7 @@ export default function Page() {
 
         {/* Footer */}
         <div className="mt-16 text-center text-sm text-muted-foreground">
-          <p>Made with <span className="text-rose-500">❤️</span> by Aswin, Amal & his <span className="text-rose-500">❤️</span></p>
+          <p>Made with <span className="text-rose-500">❤️</span> by Aswin, Amal & Krishna Priya</p>
         </div>
       </div>
     </div>

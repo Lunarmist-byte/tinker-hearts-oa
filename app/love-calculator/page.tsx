@@ -125,10 +125,34 @@ export default function LoveCalculatorPage() {
           <p className="text-xl text-muted-foreground">Discover your compatibility magic ✨</p>
         </div>
 
-        <div className="grid md:grid-cols-5 gap-8">
+        <div className="flex justify-center mb-12">
+          {/* Love Hearts Border Top */}
+          <div className="flex gap-3 justify-center items-center mb-4">
+            {[...Array(12)].map((_, i) => (
+              <Heart
+                key={`top-${i}`}
+                className="w-8 h-8 text-rose-400 fill-rose-400 animate-pulse"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-center gap-8 relative">
+          {/* Love Hearts Border Left */}
+          <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-center gap-3">
+            {[...Array(8)].map((_, i) => (
+              <Heart
+                key={`left-${i}`}
+                className="w-8 h-8 text-rose-400 fill-rose-400 animate-pulse"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
+          </div>
+
           {/* Calculator Card */}
-          <div className="md:col-span-2">
-            <div className="backdrop-blur-xl bg-background/80 rounded-3xl shadow-2xl border-2 border-rose-200/50 p-8 sticky top-8">
+          <div className="w-full max-w-3xl px-8">
+            <div className="backdrop-blur-xl bg-background/80 rounded-3xl shadow-2xl border-2 border-rose-200/50 p-12 sticky top-8">
               <form onSubmit={handleCalculate} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="name1" className="text-lg font-semibold">
@@ -187,20 +211,20 @@ export default function LoveCalculatorPage() {
 
               {/* Result Display */}
               {lovePercentage !== null && (
-                <div className="mt-8 space-y-4 animate-in fade-in duration-500">
-                  <div className="text-center space-y-2">
-                    <p className="text-sm text-muted-foreground">Your Love Match</p>
-                    <div className="text-6xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+                <div className="mt-12 space-y-6 animate-in fade-in duration-500">
+                  <div className="text-center space-y-4">
+                    <p className="text-lg text-muted-foreground font-medium">Your Love Match</p>
+                    <div className="text-8xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
                       {lovePercentage}%
                     </div>
-                    <p className="text-xl font-semibold text-rose-600 dark:text-rose-400">
+                    <p className="text-2xl font-semibold text-rose-600 dark:text-rose-400">
                       {getLoveMessage(lovePercentage)}
                     </p>
                   </div>
 
                   {/* Progress bar */}
-                  <div className="space-y-2">
-                    <div className="h-3 bg-rose-100 dark:bg-rose-950 rounded-full overflow-hidden">
+                  <div className="space-y-3">
+                    <div className="h-4 bg-rose-100 dark:bg-rose-950 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 transition-all duration-500"
                         style={{ width: `${lovePercentage}%` }}
@@ -208,54 +232,76 @@ export default function LoveCalculatorPage() {
                     </div>
                   </div>
 
-                  <div className="text-center text-sm text-muted-foreground italic">
-                    {name1} + {name2}
+                  <div className="text-center text-lg text-muted-foreground italic font-medium">
+                    {name1} <Heart className="w-5 h-5 text-rose-400 fill-rose-400 inline mx-1" /> {name2}
                   </div>
                 </div>
               )}
 
               {/* Navigation */}
-              <div className="mt-8 space-y-3 text-center text-sm">
-                <Link href="/" className="block text-muted-foreground hover:text-rose-500 transition-colors">
+              <div className="mt-10 space-y-4 text-center text-base">
+                <Link href="/" className="block text-muted-foreground hover:text-rose-500 transition-colors font-medium">
                   Back to Tinker Hearts
                 </Link>
-                <Link href="/admin" className="block text-muted-foreground hover:text-rose-500 transition-colors">
+                <Link href="/admin" className="block text-muted-foreground hover:text-rose-500 transition-colors font-medium">
                   View All Calculations
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* History */}
-          <div className="md:col-span-3">
+          {/* Love Hearts Border Right */}
+          <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-center gap-3">
+            {[...Array(8)].map((_, i) => (
+              <Heart
+                key={`right-${i}`}
+                className="w-8 h-8 text-rose-400 fill-rose-400 animate-pulse"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Love Hearts Border Bottom */}
+        <div className="flex gap-3 justify-center items-center mt-12 mb-8">
+          {[...Array(12)].map((_, i) => (
+            <Heart
+              key={`bottom-${i}`}
+              className="w-8 h-8 text-rose-400 fill-rose-400 animate-pulse"
+              style={{ animationDelay: `${i * 0.1}s` }}
+            />
+          ))}
+        </div>
+
+        {/* History - Full width below */}
+        <div className="w-full mt-12" id="history-section">
+          <div className="container max-w-4xl mx-auto px-4">
             <div className="backdrop-blur-xl bg-background/80 rounded-3xl shadow-2xl border-2 border-rose-200/50 p-8">
-              <h2 className="text-2xl font-bold mb-6 text-rose-600 dark:text-rose-400">Recent Searches</h2>
+              <h2 className="text-3xl font-bold mb-8 text-rose-600 dark:text-rose-400 text-center">Recent Love Matches</h2>
 
               {calculations.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Heart className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                  <p>Start calculating to see your love matches here...</p>
+                <div className="text-center py-16 text-muted-foreground">
+                  <Heart className="w-16 h-16 mx-auto mb-6 opacity-40" />
+                  <p className="text-lg">Start calculating to see your love matches here...</p>
                 </div>
               ) : (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {calculations.map((calc, index) => (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {calculations.slice(0, 10).map((calc, index) => (
                     <div
                       key={index}
-                      className="p-4 bg-gradient-to-r from-rose-50 to-purple-50 dark:from-rose-950 dark:to-purple-950 rounded-xl border border-rose-200/50 dark:border-rose-800/50 hover:border-rose-400 transition-colors"
+                      className="p-6 bg-gradient-to-br from-rose-50 to-purple-50 dark:from-rose-950 dark:to-purple-950 rounded-2xl border-2 border-rose-200/50 dark:border-rose-800/50 hover:border-rose-400 transition-all hover:shadow-lg"
                     >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1">
-                          <p className="font-semibold text-rose-900 dark:text-rose-100">
-                            {calc.name1} <span className="text-rose-400">❤️</span> {calc.name2}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{calc.timestamp}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-3xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+                      <div className="space-y-3">
+                        <p className="font-bold text-lg text-rose-900 dark:text-rose-100">
+                          {calc.name1} <Heart className="w-4 h-4 text-rose-400 fill-rose-400 inline mx-1" /> {calc.name2}
+                        </p>
+                        <div className="flex items-baseline justify-between">
+                          <p className="text-4xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
                             {calc.percentage}%
                           </p>
-                          <p className="text-xs text-rose-600 dark:text-rose-400">{getLoveMessage(calc.percentage)}</p>
+                          <p className="text-sm text-rose-600 dark:text-rose-400 font-semibold">{getLoveMessage(calc.percentage)}</p>
                         </div>
+                        <p className="text-xs text-muted-foreground">{calc.timestamp}</p>
                       </div>
                     </div>
                   ))}
@@ -267,7 +313,7 @@ export default function LoveCalculatorPage() {
 
         {/* Footer */}
         <div className="mt-16 text-center text-sm text-muted-foreground">
-          <p>Made with <span className="text-rose-500">❤️</span> by Aswin, Amal & his <span className="text-rose-500">❤️</span></p>
+          <p>Made with <span className="text-rose-500">❤️</span> by Aswin, Amal & Krishna Priya</p>
         </div>
       </div>
     </div>

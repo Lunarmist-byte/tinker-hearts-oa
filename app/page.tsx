@@ -218,6 +218,11 @@ export default function Page() {
             </Link>
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="mt-16 text-center text-sm text-muted-foreground">
+          <p>Made with <span className="text-rose-500">❤️</span> by Aswin, Amal & his <span className="text-rose-500">❤️</span></p>
+        </div>
       </div>
     </div>
   )

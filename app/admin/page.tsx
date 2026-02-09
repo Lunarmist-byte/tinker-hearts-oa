@@ -47,7 +47,7 @@ export default function AdminPage() {
       setIsAuthenticated(true)
       setError("")
       loadSubmissions()
-      loadLoveCalculationsFromStorage()
+      loadLoveCalculations()
     } else {
       setError("Incorrect password")
     }
@@ -71,7 +71,7 @@ export default function AdminPage() {
     }
   }
 
-  const loadLoveCalculationsFromStorage = () => {
+  const loadLoveCalculations = () => {
     try {
       const saved = localStorage.getItem("loveCalculations")
       if (saved) {
@@ -79,24 +79,6 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Error loading love calculations:", err)
-    }
-  }
-
-  const loadLoveCalculations = async () => {
-    setLoading(true)
-    try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from("love_calculations")
-        .select("*")
-        .order("timestamp", { ascending: false })
-
-      if (error) throw error
-      setLoveCalculations(data || [])
-    } catch (err) {
-      console.error("Error loading love calculations:", err)
-    } finally {
-      setLoading(false)
     }
   }
 

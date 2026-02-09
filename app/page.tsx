@@ -149,7 +149,7 @@ export default function Page() {
                 <div className="bg-gradient-to-r from-rose-100 to-purple-100 dark:from-rose-950 dark:to-purple-950 rounded-2xl p-6 border border-rose-200/50 dark:border-rose-800/50">
                   <p className="text-sm text-muted-foreground mb-2">Wait for</p>
                   <p className="text-4xl font-bold text-rose-600 dark:text-rose-400">
-                    14th February
+                    14th February 12:00 AM
                   </p>
                   <p className="text-sm text-muted-foreground mt-2">for the magical results</p>
                 </div>

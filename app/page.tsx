@@ -299,7 +299,7 @@ export default function Page() {
 
         {/* Footer */}
         <div className="mt-16 text-center text-sm text-muted-foreground">
-          <p>Made with <span className="text-rose-500">❤️</span> at Tinkerhub CEMP(Aswin,Amal,Krishna Priya)</p>
+          <p>Made with <span className="text-rose-500">❤️</span> at Ippozhe enkilum penne kittateey</p>
         </div>
       </div>
     </div>

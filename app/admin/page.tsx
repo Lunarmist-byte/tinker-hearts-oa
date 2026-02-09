@@ -23,10 +23,12 @@ type Submission = {
 }
 
 type LoveCalculation = {
+  id?: string
   name1: string
   name2: string
   percentage: number
-  timestamp: string
+  timestamp?: string
+  created_at?: string
 }
 
 export default function AdminPage() {
@@ -71,14 +73,27 @@ export default function AdminPage() {
     }
   }
 
-  const loadLoveCalculations = () => {
+  const loadLoveCalculations = async () => {
     try {
-      const saved = localStorage.getItem("loveCalculations")
-      if (saved) {
-        setLoveCalculations(JSON.parse(saved))
-      }
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("love_calculations")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      setLoveCalculations(data || [])
     } catch (err) {
       console.error("Error loading love calculations:", err)
+      // Fallback to localStorage if Supabase fails
+      try {
+        const saved = localStorage.getItem("loveCalculations")
+        if (saved) {
+          setLoveCalculations(JSON.parse(saved))
+        }
+      } catch (e) {
+        console.error("Error loading from localStorage:", e)
+      }
     }
   }
 
@@ -479,7 +494,7 @@ export default function AdminPage() {
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Calculated At</p>
-                          <p className="text-sm">{calc.timestamp}</p>
+                          <p className="text-sm">{calc.timestamp || (calc.created_at ? new Date(calc.created_at).toLocaleString() : '')}</p>
                         </div>
                       </div>
                     </div>

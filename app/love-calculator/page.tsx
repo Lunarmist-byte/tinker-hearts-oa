@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,10 +11,12 @@ import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 type LoveCalculation = {
+  id?: string
   name1: string
   name2: string
   percentage: number
-  timestamp: string
+  timestamp?: string
+  created_at?: string
 }
 
 export default function LoveCalculatorPage() {
@@ -22,14 +25,33 @@ export default function LoveCalculatorPage() {
   const [lovePercentage, setLovePercentage] = useState<number | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [calculations, setCalculations] = useState<LoveCalculation[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load calculations from localStorage
-    const saved = localStorage.getItem("loveCalculations")
-    if (saved) {
-      setCalculations(JSON.parse(saved))
-    }
+    loadCalculations()
   }, [])
+
+  const loadCalculations = async () => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("love_calculations")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      setCalculations(data || [])
+    } catch (err) {
+      console.error("Error loading calculations:", err)
+      // Fallback to localStorage if Supabase fails
+      const saved = localStorage.getItem("loveCalculations")
+      if (saved) {
+        setCalculations(JSON.parse(saved))
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const generateLovePercentage = (n1: string, n2: string): number => {
     const combined = (n1 + n2).toLowerCase()
@@ -42,28 +64,53 @@ export default function LoveCalculatorPage() {
     return Math.abs(hash % 101)
   }
 
-  const handleCalculate = (e: React.FormEvent) => {
+  const handleCalculate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name1.trim() || !name2.trim()) return
 
     setIsCalculating(true)
 
     // Simulate calculation time
-    setTimeout(() => {
+    setTimeout(async () => {
       const percentage = generateLovePercentage(name1, name2)
       setLovePercentage(percentage)
 
-      // Save to localStorage
-      const newCalculation: LoveCalculation = {
-        name1,
-        name2,
-        percentage,
-        timestamp: new Date().toLocaleString(),
-      }
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from("love_calculations")
+          .insert([
+            {
+              name1,
+              name2,
+              percentage,
+            },
+          ])
+          .select()
 
-      const updated = [newCalculation, ...calculations]
-      setCalculations(updated)
-      localStorage.setItem("loveCalculations", JSON.stringify(updated))
+        if (error) throw error
+
+        // Add to local state with response data
+        if (data && data.length > 0) {
+          const newCalculation = {
+            ...data[0],
+            timestamp: new Date(data[0].created_at).toLocaleString(),
+          }
+          setCalculations([newCalculation, ...calculations])
+        }
+      } catch (err) {
+        console.error("Error saving calculation:", err)
+        // Fallback: save locally if Supabase fails
+        const newCalculation: LoveCalculation = {
+          name1,
+          name2,
+          percentage,
+          timestamp: new Date().toLocaleString(),
+        }
+        const updated = [newCalculation, ...calculations]
+        setCalculations(updated)
+        localStorage.setItem("loveCalculations", JSON.stringify(updated))
+      }
 
       setIsCalculating(false)
     }, 800)
@@ -301,7 +348,7 @@ export default function LoveCalculatorPage() {
                           </p>
                           <p className="text-sm text-rose-600 dark:text-rose-400 font-semibold">{getLoveMessage(calc.percentage)}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground">{calc.timestamp}</p>
+                        <p className="text-xs text-muted-foreground">{calc.timestamp || (calc.created_at ? new Date(calc.created_at).toLocaleString() : '')}</p>
                       </div>
                     </div>
                   ))}

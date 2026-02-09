@@ -47,7 +47,6 @@ export default function Page() {
         pickupLine: "",
         class: "",
       })
-      setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
       console.error("Error submitting:", error)
     } finally {
@@ -93,14 +92,61 @@ export default function Page() {
           <p className="text-xl text-muted-foreground">Share your feelings, make a connection</p>
         </div>
 
+        {/* Success Modal */}
+        {success && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md animate-fade-in">
+              <div className="backdrop-blur-xl bg-background/95 rounded-3xl shadow-2xl border-2 border-rose-200/50 p-8 text-center space-y-6">
+                {/* Animated Hearts */}
+                <div className="flex justify-center gap-3 mb-4">
+                  {[0, 1, 2].map((i) => (
+                    <Heart
+                      key={i}
+                      className="w-12 h-12 text-rose-400 fill-rose-400 animate-pulse"
+                      style={{ animationDelay: `${i * 0.2}s` }}
+                    />
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+                    Your Heart Has Been Shared!
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    Your feelings are now locked in safe hands
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-r from-rose-100 to-purple-100 dark:from-rose-950 dark:to-purple-950 rounded-2xl p-6 border border-rose-200/50 dark:border-rose-800/50">
+                  <p className="text-sm text-muted-foreground mb-2">Wait for</p>
+                  <p className="text-4xl font-bold text-rose-600 dark:text-rose-400">
+                    14th February
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">for the magical results</p>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    On Valentine's Day, we'll reveal all the perfect matches and connections made through Tinker Hearts 💑
+                  </p>
+                  <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold">
+                    Cupid is working behind the scenes!
+                  </p>
+                </div>
+
+                <Button
+                  onClick={() => setSuccess(false)}
+                  className="w-full h-12 bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 hover:from-rose-500 hover:via-pink-600 hover:to-purple-700"
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Form Card */}
         <div className="backdrop-blur-xl bg-background/80 rounded-3xl shadow-2xl border-2 border-rose-200/50 p-8">
-          {success && (
-            <div className="mb-6 p-4 bg-rose-100 border border-rose-300 rounded-lg text-rose-800 text-center font-medium">
-              Your heart has been shared! 💕
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name */}
             <div className="space-y-2">

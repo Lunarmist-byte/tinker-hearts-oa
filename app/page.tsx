@@ -41,19 +41,33 @@ export default function Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate form data
+    if (!formData.name.trim() || !formData.gender || !formData.targetGender || !formData.pickupLine.trim() || !formData.class.trim()) {
+      console.error("[v0] Form validation failed: missing required fields")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       const supabase = createClient()
+      console.log("[v0] Submitting form data:", { ...formData })
+      
       const { error } = await supabase.from("tinker_hearts_submissions").insert({
-        name: formData.name,
+        name: formData.name.trim(),
         gender: formData.gender,
         target_gender: formData.targetGender,
-        pickup_line: formData.pickupLine,
-        class: formData.class,
+        pickup_line: formData.pickupLine.trim(),
+        class: formData.class.trim(),
       })
 
-      if (error) throw error
+      if (error) {
+        console.error("[v0] Supabase error:", error)
+        throw error
+      }
+      
+      console.log("[v0] Form submitted successfully")
       setSuccess(true)
       setFormData({
         name: "",
@@ -63,7 +77,7 @@ export default function Page() {
         class: "",
       })
     } catch (error) {
-      console.error("Error submitting:", error)
+      console.error("[v0] Error submitting form:", error instanceof Error ? error.message : String(error))
     } finally {
       setIsSubmitting(false)
     }

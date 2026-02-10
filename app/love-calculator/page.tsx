@@ -322,7 +322,7 @@ export default function LoveCalculatorPage() {
 
         {/* Footer */}
         <div className="mt-16 text-center text-sm text-muted-foreground">
-          <p>Made with <span className="text-rose-500">❤️</span> by Aswin, Amal & Krishna Priya</p>
+          <p>Made with <span className="text-rose-500">❤️</span> byTinkerhub CEMP</p>
         </div>
       </div>
     </div>

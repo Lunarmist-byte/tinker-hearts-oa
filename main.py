@@ -7,6 +7,8 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.metrics.pairwise import cosine_similarity
 import re
+import time
+from deep_translator import GoogleTranslator
 def calculate_flames(name1,name2):
     n1=list(name1.lower().replace(" ",""))
     n2=list(name2.lower().replace(" ",""))
@@ -25,30 +27,40 @@ def calculate_flames(name1,name2):
     return flames[0]
 FLAMES_RANK={'M':6,'L':5,'A':4,'F':3,'S':2,'E':1}
 RANK_NAME={'M':'Marriage','L':'Love','A':'Affection','F':'Friend','S':'Sister','E':'Enemy'}
+def translate_to_english(text):
+    if pd.isnull(text) or str(text).strip()=="":
+        return "Nothing"
+    try:
+        translated=GoogleTranslator(source='auto',target='en').translate(str(text))
+        return translated
+    except Exception as e:
+        print("Translation failed for '{text}:{e}")
+        return str(text)
 def smart_clean(text):
     if pd.isnull(text) or str(text).strip()=="":
         return "<MYSTERY>"
     text=str(text)
-    text=re.sub(r'([^\w\s])',r'\1',text)
+    text=re.sub(r'([^\w\s])',r' \1 ',text)
     return " ".join(text.split())
 def load_and_prep(filepath):
     df=pd.read_csv(filepath)
-    df['processed_text']=df['Pickup Line/Feeling'].apply(smart_clean)
+    df['translated_text']=df['Pickup Line/Feeling'].apply(translate_to_english)
+    df['processed_text']=df['translated_text'].apply(smart_clean)
     def categorize(t):
         if "<MYSTERY>" in t: return 0
         if any(c in t for c in "❤️🩷🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝"): return 1
         if "?" in t: return 2
         return 3
     df['label']=df['processed_text'].apply(categorize)
-    df['timestamp']=pd.to_datetime(df['Submitted At'],format="%d/%m/%Y,%I:%M:%S %p",errors='coerce')
+    df['timestamp']=pd.to_datetime(df['Submitted At'],format="%d/%m/%Y, %I:%M:%S %p",errors='coerce')
     return df
 def train_model(df):
-    tokenizer=Tokenizer(num_words=2000,filter='',lower=False,oov_token="<OOV")
+    tokenizer=Tokenizer(num_words=2000,filters='',lower=False,oov_token="<00V>")
     tokenizer.fit_on_texts(df['processed_text'])
-    sequences=tokenizer.texts_to_sequence(df['processed_text'])
-    max_len=max([len(x) for x in sequences])
+    sequences=tokenizer.texts_to_sequences(df['processed_text'])
+    max_len=max([len(x) for x in sequences])if sequences else 10
     padded_seq=pad_sequences(sequences,maxlen=max_len,padding='post')
-    labels=np.array(df['Label'])
+    labels=np.array(df['label'])
 
     input_layer=Input(shape=(max_len,))
     x=Embedding(input_dim=2000,output_dim=16)(input_layer)
@@ -86,9 +98,10 @@ def find_best_match(user_row,all_df,model,tokenizer,max_len):
     candidates['time_score']=candidates.apply(get_time_score,axis=1)
     candidates['final_score']=(candidates['ai_score']*0.08)+(candidates['time_score']*0.01)
     cluster=candidates.sort_values(by='final_score',ascending=False).head(3)
-    best_match=None
-    best_power=1
+    best_match_name='No Match'
+    best_match_class='-'
     best_relation="Unknown"
+    best_power=-1
     for _,row in cluster.iterrows():
         f_res=calculate_flames(user_name,row['Name'])
         f_rank=FLAMES_RANK[f_res]
@@ -97,7 +110,7 @@ def find_best_match(user_row,all_df,model,tokenizer,max_len):
             best_power=power
             best_match=row
             best_relation=RANK_NAME[f_res]
-    return best_match['Name'],best_match['Class'],best_relation,best_power
+    return best_match_name,best_match_class,best_relation,best_power
 input_file='tinker_hearts.csv' #change file name to what the latest file name is
 print(f"Loading Data from {input_file}")
 df=load_and_prep(input_file)

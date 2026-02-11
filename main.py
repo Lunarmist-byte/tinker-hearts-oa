@@ -34,7 +34,6 @@ def translate_to_english(text):
         translated=GoogleTranslator(source='auto',target='en').translate(str(text))
         return translated
     except Exception as e:
-        print("Translation failed for '{text}:{e}")
         return str(text)
 def smart_clean(text):
     if pd.isnull(text) or str(text).strip()=="":
@@ -58,18 +57,16 @@ def load_and_prep(filepath):
     df['timestamp']=pd.to_datetime(df['Submitted At'],format="%d/%m/%Y, %I:%M:%S %p",errors='coerce')
     return df
 def train_model(df):
-    tokenizer=Tokenizer(num_words=2000,filters='',lower=False,oov_token="<00V>")
+    tokenizer=Tokenizer(num_words=2000,filters='',lower=False,oov_token="<OOV>")
     tokenizer.fit_on_texts(df['processed_text'])
     sequences=tokenizer.texts_to_sequences(df['processed_text'])
     max_len=max([len(x) for x in sequences])if sequences else 10
     padded_seq=pad_sequences(sequences,maxlen=max_len,padding='post')
     labels=np.array(df['label'])
-
     input_layer=Input(shape=(max_len,))
     x=Embedding(input_dim=2000,output_dim=16)(input_layer)
     x=Conv1D(filters=32,kernel_size=3,activation='relu',padding='same')(x)
     x=GlobalMaxPooling1D()(x)
-    
     personality_layer=Dense(16,activation='relu',name='personality_vector')(x)
     output_layer=Dense(4,activation='softmax')(personality_layer)
     model=Model(inputs=input_layer,outputs=output_layer)
@@ -108,18 +105,12 @@ def find_unique_matches(df,model,tokenizer,max_len):
                     time_score=100/(1+diff)
                 f_res=calculate_flames(user_a['Name'],user_b['Name'])
                 f_rank=FLAMES_RANK[f_res]
-                f_res=calculate_flames(user_a['Name'],user_b['Name'])
-                f_rank=FLAMES_RANK[f_res]
                 power=f_rank+(ai_score*0.8)+(time_score*0.01)
                 potential_matches.append({
-                    'u1_idx':idx_a,
-                    'u2_idx':idx_b,
-                    'u1_name':user_a['Name'],
-                    'u2_name':user_b['Name'],
-                    'u2_class':user_b['Class'],
-                    'u1_class':user_a['Class'],
-                    'relation':RANK_NAME[f_res],
-                    'power':power
+                    'u1_idx':idx_a,'u2_idx':idx_b,
+                    'u1_name':user_a['Name'],'u2_name':user_b['Name'],
+                    'u2_class':user_b['Class'],'u1_class':user_a['Class'],
+                    'relation':RANK_NAME[f_res],'power':power
                 })
     potential_matches.sort(key=lambda x:x['power'],reverse=True)
     taken=set()
@@ -129,20 +120,15 @@ def find_unique_matches(df,model,tokenizer,max_len):
             taken.add(pm['u1_idx'])
             taken.add(pm['u2_idx'])
             final_results[pm['u1_idx']]={
-                "Matched With":pm['u2_name'],
-                "Match Class":pm['u2_class'],
-                "Relationship":pm['relation'],
-                "Compatibility Score":pm['power']
+                "Matched With":pm['u2_name'],"Match Class":pm['u2_class'],
+                "Relationship Type":pm['relation'],"Compatibility Score":pm['power']
             }
             final_results[pm['u2_idx']]={
-                "Matched With":pm['u1_name'],
-                "Match Class":pm['u1_class'],
-                "Relationship Type":pm['relation'],
-                "Compatability Score":pm['power']
+                "Matched With":pm['u1_name'],"Match Class":pm['u1_class'],
+                "Relationship Type":pm['relation'],"Compatibility Score":pm['power']
             }
     return final_results
-
-input_file='tinker_hearts.csv' #change file name to what the latest file name is
+input_file='tinker_hearts_2026-02-10.csv'
 print(f"Loading Data from {input_file}")
 df=load_and_prep(input_file)
 model,tokenizer,max_len=train_model(df)
@@ -157,7 +143,7 @@ for index,row in df.iterrows():
         relation=match_data['Relationship Type']
         power=match_data['Compatibility Score']
     else:
-        match_name='No match'
+        match_name='No Match'
         match_class="-"
         relation='Forever Alone'
         power=0.0
@@ -165,6 +151,7 @@ for index,row in df.iterrows():
         'Seeker Name':row['Name'],
         'Seeker Class':row['Class'],
         'Matched With':match_name,
+        'Match Class':match_class,
         'Relationship Type':relation,
         'Compatibility Score':round(power,2),
         'Seeker Line':row['Pickup Line/Feeling']
@@ -173,4 +160,4 @@ output_file='tinker_hearts_connections.csv'
 results_df=pd.DataFrame(results)
 results_df.to_csv(output_file,index=False)
 print(f"\n Success! Matches saved to :{output_file}")
-print(results_df[['Seeker Name','Matched With','Relationship Type']].head(10))
+print(results_df.head())

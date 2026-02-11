@@ -78,66 +78,93 @@ def train_model(df):
     model.fit(padded_seq,labels,epochs=30,verbose=0)
     extractor=Model(inputs=model.input,outputs=model.get_layer('personality_vector').output)
     return extractor,tokenizer,max_len
-def find_best_match(user_row,all_df,model,tokenizer,max_len):
-    user_name=user_row['Name']
-<<<<<<< HEAD
-    user_gender=str(user_row['Gender']).strip().lower()
-    target_gender=str(user_row['Target Gender']).strip().lower()
-    if target_gender=="endhelum-madhi":
-        candidates=all_df[all_df['Name']!=user_name].copy()
-    else:
-        candidates=all_df[(all_df['Gender'].str.strip().str.lower()==target_gender)&(all_df['Target Gender'].str.strip().str.lower()==user_gender)&(all_df['Name']!=user_name)].copy()
-    if candidates.empty:
-        return "No Match","-","Forever Alone",0.0
-=======
-    user_gender=user_row['Gender'].strip().lower()
-    target_gender=user_row['Target Gender'].strip().lower()
-    u_seq=tokenizer.texts_to_sequences([user_row['processed_text']])
-    u_pad=pad_sequences(u_seq,maxlen=max_len,padding='post')
-    u_vector=model.predict(u_pad,verbose=0)
-    candidates=all_df[
-        (all_df['Gender'].str.lower()==str(target_gender).lower())&(all_df['Target Gender'].str.lower()==str(user_gender).lower())&(all_df['Name']!=user_name)].copy()
-    if target.gender
->>>>>>> 84d57fa8b0572b1b0a6749b43d0f7b0a1e6f14a7
-    c_seq=tokenizer.texts_to_sequences(candidates['processed_text'])
-    c_pad=pad_sequences(c_seq,maxlen=max_len,padding='post')
-    c_vectors=model.predict(c_pad,verbose=0)
+def find_unique_matches(df,model,tokenizer,max_len):
+    print("Calculating AI Vectors")
+    all_seq=tokenizer.texts_to_sequences(df['processed_text'])
+    all_pad=pad_sequences(all_seq,maxlen=max_len,padding='post')
+    all_vectors=model.predict(all_pad,verbose=0)
+    potential_matches=[]
+    ids=df.index.tolist()
+    print("Analyzing all relations")
+    for i in range(len(ids)):
+        for j in range(i+1,len(ids)):
+            idx_a=ids[i]
+            idx_b=ids[j]
+            user_a=df.loc[idx_a]
+            user_b=df.loc[idx_b]
+            a_gender=str(user_a['Gender']).strip().lower()
+            a_target=str(user_a['Target Gender']).strip().lower()
+            b_gender=str(user_b['Gender']).strip().lower()
+            b_target=str(user_b['Target Gender']).strip().lower()
+            valid_a_to_b=(a_target=="endhelum-madhi")or(a_target==b_gender)
+            valid_b_to_a=(b_target=="endhelum-madhi")or(b_target==a_gender)
+            if valid_a_to_b and valid_b_to_a:
+                vec_a=all_vectors[i].reshape(1,-1)
+                vec_b=all_vectors[j].reshape(1,-1)
+                ai_score=cosine_similarity(vec_a,vec_b)[0][0]
+                time_score=0
+                if pd.notnull(user_a['timestamp']) and pd.notnull(user_b['timestamp']):
+                    diff=abs((user_a['timestamp']-user_b['timestamp']).total_seconds()/60)
+                    time_score=100/(1+diff)
+                f_res=calculate_flames(user_a['Name'],user_b['Name'])
+                f_rank=FLAMES_RANK[f_res]
+                f_res=calculate_flames(user_a['Name'],user_b['Name'])
+                f_rank=FLAMES_RANK[f_res]
+                power=f_rank+(ai_score*0.8)+(time_score*0.01)
+                potential_matches.append({
+                    'u1_idx':idx_a,
+                    'u2_idx':idx_b,
+                    'u1_name':user_a['Name'],
+                    'u2_name':user_b['Name'],
+                    'u2_class':user_b['Class'],
+                    'u1_class':user_a['Class'],
+                    'relation':RANK_NAME[f_res],
+                    'power':power
+                })
+    potential_matches.sort(key=lambda x:x['power'],reverse=True)
+    taken=set()
+    final_results={}
+    for pm in potential_matches:
+        if pm['u1_idx'] not in taken and pm['u2_idx'] not in taken:
+            taken.add(pm['u1_idx'])
+            taken.add(pm['u2_idx'])
+            final_results[pm['u1_idx']]={
+                "Matched With":pm['u2_name'],
+                "Match Class":pm['u2_class'],
+                "Relationship":pm['relation'],
+                "Compatibility Score":pm['power']
+            }
+            final_results[pm['u2_idx']]={
+                "Matched With":pm['u1_name'],
+                "Match Class":pm['u1_class'],
+                "Relationship Type":pm['relation'],
+                "Compatability Score":pm['power']
+            }
+    return final_results
 
-    candidates['ai_score']=cosine_similarity(u_vector,c_vectors)[0]
-    def get_time_score(c_row):
-        if pd.isnull(user_row['timestamp']) or pd.isnull(c_row['timestamp']): return 0
-        diff=abs((user_row['timestamp']-c_row['timestamp']).total_seconds()/60)
-        return 100/(1+diff)
-    candidates['time_score']=candidates.apply(get_time_score,axis=1)
-    candidates['final_score']=(candidates['ai_score']*0.08)+(candidates['time_score']*0.01)
-    cluster=candidates.sort_values(by='final_score',ascending=False).head(3)
-    best_match_name='No Match'
-    best_match_class='-'
-    best_relation="Unknown"
-    best_power=-100
-    for _,row in cluster.iterrows():
-        f_res=calculate_flames(user_name,row['Name'])
-        f_rank=FLAMES_RANK[f_res]
-        power=f_rank+row['ai_score']
-        if power>best_power:
-            best_power=power
-            best_match_name=row['Name']
-            best_match_class=row['Class']
-            best_relation=RANK_NAME[f_res]
-    return best_match_name,best_match_class,best_relation,best_power
 input_file='tinker_hearts.csv' #change file name to what the latest file name is
 print(f"Loading Data from {input_file}")
 df=load_and_prep(input_file)
 model,tokenizer,max_len=train_model(df)
 print("Processing matches")
+matches_map=find_unique_matches(df,model,tokenizer,max_len)
 results=[]
 for index,row in df.iterrows():
-    match_name,match_class,relation,power=find_best_match(row,df,model,tokenizer,max_len)
+    if index in matches_map:
+        match_data=matches_map[index]
+        match_name=match_data['Matched With']
+        match_class=match_data['Match Class']
+        relation=match_data['Relationship Type']
+        power=match_data['Compatibility Score']
+    else:
+        match_name='No match'
+        match_class="-"
+        relation='Forever Alone'
+        power=0.0
     results.append({
         'Seeker Name':row['Name'],
         'Seeker Class':row['Class'],
         'Matched With':match_name,
-        'Match Class':match_class,
         'Relationship Type':relation,
         'Compatibility Score':round(power,2),
         'Seeker Line':row['Pickup Line/Feeling']
@@ -146,4 +173,4 @@ output_file='tinker_hearts_connections.csv'
 results_df=pd.DataFrame(results)
 results_df.to_csv(output_file,index=False)
 print(f"\n Success! Matches saved to :{output_file}")
-print(results_df.head())
+print(results_df[['Seeker Name','Matched With','Relationship Type']].head(10))

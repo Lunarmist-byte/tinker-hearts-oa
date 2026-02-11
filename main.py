@@ -44,6 +44,9 @@ def smart_clean(text):
     return " ".join(text.split())
 def load_and_prep(filepath):
     df=pd.read_csv(filepath)
+    df.columns=df.columns.str.strip()
+    df['Gender']=df['Gender'].astype(str).str.strip()
+    df['Target Gender']=df['Target Gender'].astype(str).str.strip()
     df['translated_text']=df['Pickup Line/Feeling'].apply(translate_to_english)
     df['processed_text']=df['translated_text'].apply(smart_clean)
     def categorize(t):
@@ -77,13 +80,12 @@ def train_model(df):
     return extractor,tokenizer,max_len
 def find_best_match(user_row,all_df,model,tokenizer,max_len):
     user_name=user_row['Name']
-    user_gender=user_row['Gender']
-    target_gender=user_row['Target Gender']
-    u_seq=tokenizer.texts_to_sequences([user_row['processed_text']])
-    u_pad=pad_sequences(u_seq,maxlen=max_len,padding='post')
-    u_vector=model.predict(u_pad,verbose=0)
-    candidates=all_df[
-        (all_df['Gender'].str.lower()==str(target_gender).lower())&(all_df['Target Gender'].str.lower()==str(user_gender).lower())&(all_df['Name']!=user_name)].copy()
+    user_gender=str(user_row['Gender']).strip().lower()
+    target_gender=str(user_row['Target Gender']).strip().lower()
+    if target_gender=="endhelum-madhi":
+        candidates=all_df[all_df['Name']!=user_name].copy()
+    else:
+        candidates=all_df[(all_df['Gender'].str.strip().str.lower()==target_gender)&(all_df['Target Gender'].str.strip().str.lower()==user_gender)&(all_df['Name']!=user_name)].copy()
     if candidates.empty:
         return "No Match","-","Forever Alone",0.0
     c_seq=tokenizer.texts_to_sequences(candidates['processed_text'])
@@ -101,14 +103,15 @@ def find_best_match(user_row,all_df,model,tokenizer,max_len):
     best_match_name='No Match'
     best_match_class='-'
     best_relation="Unknown"
-    best_power=-1
+    best_power=-100
     for _,row in cluster.iterrows():
         f_res=calculate_flames(user_name,row['Name'])
         f_rank=FLAMES_RANK[f_res]
         power=f_rank+row['ai_score']
         if power>best_power:
             best_power=power
-            best_match=row
+            best_match_name=row['Name']
+            best_match_class=row['Class']
             best_relation=RANK_NAME[f_res]
     return best_match_name,best_match_class,best_relation,best_power
 input_file='tinker_hearts.csv' #change file name to what the latest file name is

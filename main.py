@@ -128,7 +128,7 @@ def find_unique_matches(df,model,tokenizer,max_len):
                 "Relationship Type":pm['relation'],"Compatibility Score":pm['power']
             }
     return final_results
-input_file='tinker_hearts_2026-02-10.csv'
+input_file='tinker_hearts.csv'#file-name should be changed here !!!!
 print(f"Loading Data from {input_file}")
 df=load_and_prep(input_file)
 model,tokenizer,max_len=train_model(df)
@@ -158,6 +158,6 @@ for index,row in df.iterrows():
     })
 output_file='tinker_hearts_connections.csv'
 results_df=pd.DataFrame(results)
-results_df.to_csv(output_file,index=False)
+results_df.to_csv(output_file,index=False,encoding='utf-8-sig')
 print(f"\n Success! Matches saved to :{output_file}")
 print(results_df.head())

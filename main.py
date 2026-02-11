@@ -80,6 +80,7 @@ def train_model(df):
     return extractor,tokenizer,max_len
 def find_best_match(user_row,all_df,model,tokenizer,max_len):
     user_name=user_row['Name']
+<<<<<<< HEAD
     user_gender=str(user_row['Gender']).strip().lower()
     target_gender=str(user_row['Target Gender']).strip().lower()
     if target_gender=="endhelum-madhi":
@@ -88,6 +89,16 @@ def find_best_match(user_row,all_df,model,tokenizer,max_len):
         candidates=all_df[(all_df['Gender'].str.strip().str.lower()==target_gender)&(all_df['Target Gender'].str.strip().str.lower()==user_gender)&(all_df['Name']!=user_name)].copy()
     if candidates.empty:
         return "No Match","-","Forever Alone",0.0
+=======
+    user_gender=user_row['Gender'].strip().lower()
+    target_gender=user_row['Target Gender'].strip().lower()
+    u_seq=tokenizer.texts_to_sequences([user_row['processed_text']])
+    u_pad=pad_sequences(u_seq,maxlen=max_len,padding='post')
+    u_vector=model.predict(u_pad,verbose=0)
+    candidates=all_df[
+        (all_df['Gender'].str.lower()==str(target_gender).lower())&(all_df['Target Gender'].str.lower()==str(user_gender).lower())&(all_df['Name']!=user_name)].copy()
+    if target.gender
+>>>>>>> 84d57fa8b0572b1b0a6749b43d0f7b0a1e6f14a7
     c_seq=tokenizer.texts_to_sequences(candidates['processed_text'])
     c_pad=pad_sequences(c_seq,maxlen=max_len,padding='post')
     c_vectors=model.predict(c_pad,verbose=0)

@@ -4,14 +4,22 @@ import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
 
 export function SplashScreen() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false)
-    }, 4000)
+    // Check if splash has already been shown in this session
+    const splashShown = sessionStorage.getItem('splashShown')
+    
+    if (!splashShown) {
+      setIsVisible(true)
+      sessionStorage.setItem('splashShown', 'true')
+      
+      const timer = setTimeout(() => {
+        setIsVisible(false)
+      }, 4000)
 
-    return () => clearTimeout(timer)
+      return () => clearTimeout(timer)
+    }
   }, [])
 
   if (!isVisible) return null

@@ -120,11 +120,6 @@ export default function AdminPage() {
         }
       }
 
-      if (results.length === 0) {
-        alert("No valid records found in CSV. Please check the format.")
-        return
-      }
-
       // Clear existing results first
       const supabase = createClient()
       await supabase.from("match_results").delete().neq("id", "00000000-0000-0000-0000-000000000000")

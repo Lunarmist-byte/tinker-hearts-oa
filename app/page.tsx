@@ -283,20 +283,24 @@ export default function Page() {
           </form>
 
           {/* Navigation Links */}
-          <div className="mt-12 flex items-center justify-center gap-6 flex-wrap">
+          <div className="mt-12 flex flex-col items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-6 flex-wrap">
+              <Link 
+                href="/love-calculator" 
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white font-bold text-lg rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              >
+                💕 Find Your Love Match 💕
+              </Link>
+              <span className="text-muted-foreground text-xl">•</span>
+              <Link href="/admin" className="text-base text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors font-semibold">
+                Admin
+              </Link>
+            </div>
             <Link 
-              href="/love-calculator" 
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:via-pink-700 hover:to-rose-700 text-white font-bold text-lg rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              href="/results" 
+              className="mt-2 px-10 py-4 bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 hover:from-pink-600 hover:via-rose-600 hover:to-red-600 text-white font-bold text-xl rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 animate-pulse"
             >
-              💕 Find Your Love Match 💕
-            </Link>
-            <span className="text-muted-foreground text-xl">•</span>
-            <Link href="/results" className="text-base text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors font-semibold">
-              Results
-            </Link>
-            <span className="text-muted-foreground text-xl">•</span>
-            <Link href="/admin" className="text-base text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors font-semibold">
-              Admin
+              🎉 Check Your Valentine Results 🎉
             </Link>
           </div>
         </div>

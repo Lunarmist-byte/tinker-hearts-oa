@@ -102,8 +102,8 @@ export default function ResultsPage() {
                 <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 bg-clip-text text-transparent">
                   Your Valentine's Destiny Awaits
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-                  On this beautiful Valentine's Day, we gathered hearts seeking connection. While not everyone found their match, remember: the journey of love is as beautiful as the destination.
+                <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                  On this beautiful Valentine's Day, we gathered so many hearts seeking connection and love. We wished we could match every single one of you with someone special, but sadly we could only create 28 beautiful connections. We're truly sorry if you weren't among them - your heart is just as precious and deserving of love. This is just the beginning of your love story, and we believe your perfect match is still out there waiting for you. ❤️
                 </p>
               </div>
 

@@ -77,7 +77,7 @@ export default function AdminPage() {
       const text = await file.text()
       const lines = text.split("\n").filter((line) => line.trim())
 
-      // Parse CSV (assuming format: name,class,match_name,match_class,message)
+      // Parse CSV with proper quote handling
       const results: Array<{
         name: string
         class: string
@@ -87,16 +87,42 @@ export default function AdminPage() {
       }> = []
 
       for (let i = 1; i < lines.length; i++) {
-        const [name, class_, match_name, match_class, message] = lines[i].split(",").map((s) => s.trim())
+        const line = lines[i].trim()
+        if (!line) continue
+
+        // Parse CSV line handling quoted values
+        const fields: string[] = []
+        let current = ""
+        let insideQuotes = false
+
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j]
+          if (char === '"') {
+            insideQuotes = !insideQuotes
+          } else if (char === "," && !insideQuotes) {
+            fields.push(current.trim().replace(/^"|"$/g, ""))
+            current = ""
+          } else {
+            current += char
+          }
+        }
+        fields.push(current.trim().replace(/^"|"$/g, ""))
+
+        const [name, class_, match_name, match_class, message] = fields
         if (name && class_ && match_name && match_class) {
           results.push({
-            name,
-            class: class_,
-            match_name,
-            match_class,
-            message: message || undefined,
+            name: name.trim(),
+            class: class_.trim(),
+            match_name: match_name.trim(),
+            match_class: match_class.trim(),
+            message: message?.trim() || undefined,
           })
         }
+      }
+
+      if (results.length === 0) {
+        alert("No valid records found in CSV. Please check the format.")
+        return
       }
 
       // Clear existing results first
@@ -106,10 +132,13 @@ export default function AdminPage() {
       // Insert new results
       const { error } = await supabase.from("match_results").insert(results)
 
-      if (error) throw error
+      if (error) {
+        console.error("[v0] Supabase insert error:", error)
+        throw error
+      }
 
       alert(`Successfully uploaded ${results.length} match results!`)
-      loadMatchResults()
+      await loadMatchResults()
     } catch (err) {
       console.error("[v0] Error uploading CSV:", err)
       alert("Error uploading CSV. Please check the format and try again.")

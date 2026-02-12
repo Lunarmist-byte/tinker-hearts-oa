@@ -46,7 +46,7 @@ def load_and_prep(filepath):
     df=pd.read_csv(filepath)
     df.columns=df.columns.str.strip()
     df['Gender']=df['Gender'].apply(normalize_gender)
-    print("Activaing Neural Network")
+    print("Activating Neural Network")
     df['translated_text']=df['Pickup Line/Feeling'].apply(translate_to_english)
     df['processed_text']=df['translated_text'].apply(smart_clean)
     df['effort_score']=df['processed_text'].apply(calculate_effort)
@@ -79,9 +79,9 @@ def solve_matrix(df,model,tokenizer,max_len):
     pad=pad_sequences(seq,maxlen=max_len,padding='post')
     soul_matrix=model.predict(pad,verbose=0)
     sim_matrix=cosine_similarity(soul_matrix)*10.0
-    genders=df['Gender'].values
+    genders=np.array(df['Gender'].tolist())
     gender_mask=(genders[:None]!=genders[None,:]).astype(float)
-    efforts=df['effort_score'].values
+    efforts=np.array(df['effort_score'].tolist())
     effort_matrix=efforts[:,None]*efforts[None,:]
     names=df['Name'].values
     flames_tiebreaker=np.zeros((n,n))
@@ -110,8 +110,10 @@ def solve_matrix(df,model,tokenizer,max_len):
             else: status='Arranged Marriage 🤝'
             matches[i]={'With':names[j],'Class':df.iloc[j]['Class'],'Type':status,'Score':raw_score}
             matches[j]={'With':names[i],'Class':df.iloc[i]['Class'],'Type':status,'Score':raw_score}
-            final_score_matrix[i,:]=-999,final_score_matrix[:,i]=-999
-            final_score_matrix[j,:]=-999,final_score_matrix[:,j]=-999
+            final_score_matrix[i,:]=-999
+            final_score_matrix[:,i]=-999
+            final_score_matrix[j,:]=-999
+            final_score_matrix[:,j]=-999
         else:
             final_score_matrix[i,j]=-999
     return matches

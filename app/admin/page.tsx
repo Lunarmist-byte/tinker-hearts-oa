@@ -577,7 +577,10 @@ export default function AdminPage() {
               ))
             )}
           </div>
-        ) : (
+        )}
+
+        {/* Love Calculator Tab */}
+        {activeTab === "love" && (
           <div className="space-y-4">
             {loveCalculations.length === 0 ? (
               <Card className="border-rose-200/50">
@@ -620,7 +623,10 @@ export default function AdminPage() {
               ))
             )}
           </div>
-        ) : (
+        )}
+
+        {/* Results Tab */}
+        {activeTab === "results" && (
           <div className="space-y-6">
             {/* CSV Upload Section */}
             <Card className="border-rose-200/50">

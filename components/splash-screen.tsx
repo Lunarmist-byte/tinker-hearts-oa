@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+import { Heart } from 'lucide-react'
 
 export function SplashScreen() {
   const [isVisible, setIsVisible] = useState(true)
@@ -10,7 +9,7 @@ export function SplashScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false)
-    }, 3000)
+    }, 4000)
 
     return () => clearTimeout(timer)
   }, [])
@@ -18,23 +17,42 @@ export function SplashScreen() {
   if (!isVisible) return null
 
   return (
-    <Link href="https://tinkerhub.org/events/V3AFAR17E1/tink-her-hack-4.0" target="_blank" rel="noopener noreferrer">
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm cursor-pointer group">
-        <div className="relative w-full h-full max-w-2xl max-h-2xl flex items-center justify-center p-4 animate-fade-in">
-          <Image
-            src="/tink-her-hack-splash.jpg"
-            alt="Tink Her Hack 4.0 - TinkerHub CEMP"
-            fill
-            priority
-            className="object-contain group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-white text-center text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black bg-opacity-70 px-4 py-2 rounded-lg">
-              Click to register for Tink Her Hack 4.0
-            </p>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-rose-500/20 via-pink-500/20 to-purple-500/20 backdrop-blur-md">
+      <div className="text-center space-y-6 px-4 animate-fade-in">
+        <div className="flex justify-center gap-3 mb-4">
+          {[0, 1, 2].map((i) => (
+            <Heart
+              key={i}
+              className="w-12 h-12 text-rose-500 fill-rose-500 animate-pulse"
+              style={{ animationDelay: `${i * 0.2}s` }}
+            />
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
+            Thank You!
+          </h1>
+          
+          <p className="text-2xl font-semibold text-rose-700 dark:text-rose-300">
+            Thank you for making Tink Her Hack and Tinker Hearts a success
+          </p>
+          
+          <p className="text-lg text-rose-600 dark:text-rose-400">
+            With love, TinkerHub CEMP Team
+          </p>
+        </div>
+
+        <div className="flex justify-center gap-2 mt-6">
+          {[...Array(5)].map((_, i) => (
+            <Heart
+              key={i}
+              className="w-6 h-6 text-rose-400 fill-rose-400 animate-bounce"
+              style={{ animationDelay: `${i * 0.1}s` }}
+            />
+          ))}
         </div>
       </div>
-    </Link>
+    </div>
   )
 }

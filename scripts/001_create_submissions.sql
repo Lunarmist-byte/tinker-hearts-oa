@@ -47,3 +47,30 @@ CREATE POLICY "allow_public_read_love"
   ON public.love_calculations 
   FOR SELECT 
   USING (true);
+
+-- Create match results table
+CREATE TABLE IF NOT EXISTS public.match_results (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  class TEXT NOT NULL,
+  match_name TEXT NOT NULL,
+  match_class TEXT NOT NULL,
+  message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(name, class)
+);
+
+-- Enable RLS
+ALTER TABLE public.match_results ENABLE ROW LEVEL SECURITY;
+
+-- Allow anyone to read (for results reveal)
+CREATE POLICY "allow_public_read_results" 
+  ON public.match_results 
+  FOR SELECT 
+  USING (true);
+
+-- Allow insert from admin
+CREATE POLICY "allow_public_insert_results" 
+  ON public.match_results 
+  FOR INSERT 
+  WITH CHECK (true);

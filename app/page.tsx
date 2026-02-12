@@ -291,6 +291,10 @@ export default function Page() {
               💕 Find Your Love Match 💕
             </Link>
             <span className="text-muted-foreground text-xl">•</span>
+            <Link href="/results" className="text-base text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors font-semibold">
+              Results
+            </Link>
+            <span className="text-muted-foreground text-xl">•</span>
             <Link href="/admin" className="text-base text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 transition-colors font-semibold">
               Admin
             </Link>

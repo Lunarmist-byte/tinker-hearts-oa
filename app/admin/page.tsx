@@ -31,15 +31,27 @@ type LoveCalculation = {
   created_at?: string
 }
 
+type MatchResult = {
+  id: string
+  name: string
+  class: string
+  match_name: string
+  match_class: string
+  message?: string
+  created_at: string
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [error, setError] = useState("")
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loveCalculations, setLoveCalculations] = useState<LoveCalculation[]>([])
+  const [matchResults, setMatchResults] = useState<MatchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"hearts" | "love">("hearts")
+  const [activeTab, setActiveTab] = useState<"hearts" | "love" | "results">("hearts")
+  const [uploadingCSV, setUploadingCSV] = useState(false)
 
   const ADMIN_PASSWORD = "kukudukozhi@2022"
 
@@ -50,8 +62,60 @@ export default function AdminPage() {
       setError("")
       loadSubmissions()
       loadLoveCalculations()
+      loadMatchResults()
     } else {
       setError("Incorrect password")
+    }
+  }
+
+  const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingCSV(true)
+    try {
+      const text = await file.text()
+      const lines = text.split("\n").filter((line) => line.trim())
+
+      // Parse CSV (assuming format: name,class,match_name,match_class,message)
+      const results: Array<{
+        name: string
+        class: string
+        match_name: string
+        match_class: string
+        message?: string
+      }> = []
+
+      for (let i = 1; i < lines.length; i++) {
+        const [name, class_, match_name, match_class, message] = lines[i].split(",").map((s) => s.trim())
+        if (name && class_ && match_name && match_class) {
+          results.push({
+            name,
+            class: class_,
+            match_name,
+            match_class,
+            message: message || undefined,
+          })
+        }
+      }
+
+      // Clear existing results first
+      const supabase = createClient()
+      await supabase.from("match_results").delete().neq("id", "00000000-0000-0000-0000-000000000000")
+
+      // Insert new results
+      const { error } = await supabase.from("match_results").insert(results)
+
+      if (error) throw error
+
+      alert(`Successfully uploaded ${results.length} match results!`)
+      loadMatchResults()
+    } catch (err) {
+      console.error("[v0] Error uploading CSV:", err)
+      alert("Error uploading CSV. Please check the format and try again.")
+    } finally {
+      setUploadingCSV(false)
+      e.target.value = ""
     }
   }
 
@@ -94,6 +158,21 @@ export default function AdminPage() {
       } catch (e) {
         console.error("Error loading from localStorage:", e)
       }
+    }
+  }
+
+  const loadMatchResults = async () => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("match_results")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      setMatchResults(data || [])
+    } catch (err) {
+      console.error("[v0] Error loading match results:", err)
     }
   }
 
@@ -180,6 +259,7 @@ export default function AdminPage() {
       const interval = setInterval(() => {
         loadSubmissions()
         loadLoveCalculations()
+        loadMatchResults()
       }, 30000) // Refresh every 30s
       return () => clearInterval(interval)
     }
@@ -265,11 +345,13 @@ export default function AdminPage() {
           <div className="flex items-center gap-3">
             {activeTab === "hearts" ? (
               <Heart className="w-8 h-8 text-rose-400 fill-rose-400" />
-            ) : (
+            ) : activeTab === "love" ? (
               <Sparkles className="w-8 h-8 text-rose-400" />
+            ) : (
+              <Heart className="w-8 h-8 text-rose-400 fill-rose-400" />
             )}
             <h1 className="text-4xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-              {activeTab === "hearts" ? "Tinker Hearts Admin" : "Love Calculator Admin"}
+              {activeTab === "hearts" ? "Tinker Hearts Admin" : activeTab === "love" ? "Love Calculator Admin" : "Match Results Admin"}
             </h1>
           </div>
           <div className="flex gap-3">
@@ -332,6 +414,17 @@ export default function AdminPage() {
           >
             <Sparkles className="w-4 h-4 inline mr-2" />
             Love Calculator ({loveCalculations.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("results")}
+            className={`pb-3 px-4 font-semibold transition-colors ${
+              activeTab === "results"
+                ? "text-rose-600 dark:text-rose-400 border-b-2 border-rose-400"
+                : "text-muted-foreground hover:text-rose-500"
+            }`}
+          >
+            <Heart className="w-4 h-4 inline mr-2" />
+            Match Results ({matchResults.length})
           </button>
         </div>
 
@@ -502,6 +595,75 @@ export default function AdminPage() {
                 </Card>
               ))
             )}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* CSV Upload Section */}
+            <Card className="border-rose-200/50">
+              <CardHeader>
+                <CardTitle className="text-2xl">Upload Match Results</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Upload a CSV file with columns: name, class, match_name, match_class, message
+                </p>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCSVUpload}
+                    disabled={uploadingCSV}
+                    className="flex-1 p-2 border-2 border-dashed border-rose-300 rounded-lg cursor-pointer"
+                  />
+                  {uploadingCSV && <p className="text-sm text-muted-foreground">Uploading...</p>}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Results Display */}
+            <div className="space-y-4">
+              {matchResults.length === 0 ? (
+                <Card className="border-rose-200/50">
+                  <CardContent className="py-12 text-center text-muted-foreground">
+                    No match results uploaded yet. Upload a CSV file to add results.
+                  </CardContent>
+                </Card>
+              ) : (
+                matchResults.map((result) => (
+                  <Card key={result.id} className="border-rose-200/50 hover:border-rose-300 transition-colors">
+                    <CardContent className="pt-6">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Person</p>
+                            <p className="font-semibold text-lg">{result.name}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Class</p>
+                            <p className="font-medium">{result.class}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Matched With</p>
+                            <p className="font-semibold text-lg text-rose-600 dark:text-rose-400">{result.match_name}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Class</p>
+                            <p className="font-medium">{result.match_class}</p>
+                          </div>
+                        </div>
+                      </div>
+                      {result.message && (
+                        <div className="mt-4 p-3 bg-rose-50 dark:bg-rose-950 rounded-lg border border-rose-200 dark:border-rose-800">
+                          <p className="text-sm text-rose-900 dark:text-rose-100 italic">{result.message}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
           </div>
         )}
 

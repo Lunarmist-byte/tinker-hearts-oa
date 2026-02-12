@@ -117,19 +117,42 @@ def solve_matrix(df,model,tokenizer,max_len):
         else:
             final_score_matrix[i,j]=-999
     return matches
-input_file='tinker_hearts.csv'
-print("Loading:{input_file}")
-df=load_and_prep(input_file)
-model,tokenizer,max_len=train_model(df)
-match_map=solve_matrix(df,model,tokenizer,max_len)
-final_data=[]
-for idx,row in df.iterrows():
-    if idx in match_map:
-        m=match_map[idx]
-        final_data.append({
-            'User':row['Name'],'User Class':row['Class'],'Matched With':m['With'],'Match Class':m['Class'],'Status':m['Type'],'Compat. Score':round(m['Score'],2),'Bio':row['Pickup Line/Feeling']})
-    else:
-        final_data.append({'User':row['Name'],'User Class':row['Class'],'Matched With':m['With'],'Match Class':m['Class'],'Status':m['Type'],'Compat. Score':round(m['Score'],2),'Bio':row['Pickup Line/Feeling']})
-out_file='tinker_hearts_connections.csv'
-pd.DataFrame(final_data).to_csv(out_file,index=False,encoding='utf-8-sig')
-print(f"Matching Complete. Data Written to {out_file}")
+if __name__ == "__main__":
+    input_file = 'tinker_hearts.csv'
+    print(f"Loading: {input_file}")
+    try:
+        df = load_and_prep(input_file)
+        model, tokenizer, max_len = train_model(df)
+        match_map = solve_matrix(df, model, tokenizer, max_len)
+
+        final_data = []
+        for idx, row in df.iterrows():
+            if idx in match_map:
+                m = match_map[idx]
+                final_data.append({
+                    'User': row['Name'],
+                    'User Class': row['Class'],
+                    'Matched With': m['With'],
+                    'Match Class': m['Class'],
+                    'Status': m['Type'],
+                    'Compat. Score': round(m['Score'], 2),
+                    'Bio': row['Pickup Line/Feeling']
+                })
+            else:
+                # FIX 2: Handle unmatched users correctly without referencing undefined 'm'
+                final_data.append({
+                    'User': row['Name'],
+                    'User Class': row['Class'],
+                    'Matched With': "No Match Found",
+                    'Match Class': "N/A",
+                    'Status': "Forever Alone",
+                    'Compat. Score': 0.0,
+                    'Bio': row['Pickup Line/Feeling']
+                })
+
+        out_file = 'tinker_hearts_connections.csv'
+        pd.DataFrame(final_data).to_csv(out_file, index=False, encoding='utf-8-sig')
+        print(f"Matching Complete. Data Written to {out_file}")
+
+    except FileNotFoundError:
+        print(f"Error: Could not find {input_file}. Please ensure the CSV is in the directory.")

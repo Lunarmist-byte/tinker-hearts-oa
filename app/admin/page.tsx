@@ -453,7 +453,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats */}
-        {activeTab === "hearts" ? (
+        {activeTab === "hearts" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <Card className="border-rose-200/50">
               <CardContent className="pt-6">
@@ -485,7 +485,9 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
-        ) : (
+        )}
+
+        {activeTab === "love" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <Card className="border-rose-200/50">
               <CardContent className="pt-6">
@@ -514,7 +516,7 @@ export default function AdminPage() {
         )}
 
         {/* Content */}
-        {activeTab === "hearts" ? (
+        {activeTab === "hearts" && (
           <div className="space-y-4">
             {submissions.length === 0 ? (
               <Card className="border-rose-200/50">

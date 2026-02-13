@@ -553,49 +553,54 @@ export default function AdminPage() {
 
         {/* Results Tab */}
         {activeTab === "results" && (
-          <div className="space-y-4">
-              {matchResults.length === 0 ? (
-                <Card className="border-rose-200/50">
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    No match results uploaded yet. Upload a CSV file to add results.
+          <div className="space-y-6">
+            {matchResults.length === 0 ? (
+              <Card className="border-rose-200/50">
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <p>No match results available yet.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card className="border-rose-200/50 bg-rose-50/50 dark:bg-rose-950/30">
+                  <CardContent className="pt-6">
+                    <p className="text-lg font-semibold text-rose-700 dark:text-rose-300">
+                      Total Matches: {matchResults.length}
+                    </p>
                   </CardContent>
                 </Card>
-              ) : (
-                matchResults.map((result) => (
-                  <Card key={result.id} className="border-rose-200/50 hover:border-rose-300 transition-colors">
-                    <CardContent className="pt-6">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Person</p>
-                            <p className="font-semibold text-lg">{result.name}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Class</p>
-                            <p className="font-medium">{result.class}</p>
-                          </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {matchResults.map((result) => (
+                    <Card key={result.id} className="border-rose-200/50 hover:border-rose-300 transition-colors h-full">
+                      <CardContent className="pt-6 space-y-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Person</p>
+                          <p className="font-bold text-rose-700 dark:text-rose-300">{result.name}</p>
                         </div>
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Matched With</p>
-                            <p className="font-semibold text-lg text-rose-600 dark:text-rose-400">{result.match_name}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Class</p>
-                            <p className="font-medium">{result.match_class}</p>
-                          </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Class</p>
+                          <p className="text-sm text-muted-foreground">{result.class}</p>
                         </div>
-                      </div>
-                      {result.message && (
-                        <div className="mt-4 p-3 bg-rose-50 dark:bg-rose-950 rounded-lg border border-rose-200 dark:border-rose-800">
-                          <p className="text-sm text-rose-900 dark:text-rose-100 italic">{result.message}</p>
+                        <div className="border-t border-rose-200/50 dark:border-rose-800/50 pt-3">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Matched With</p>
+                          <p className="font-bold text-rose-600 dark:text-rose-400">{result.match_name}</p>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Class</p>
+                          <p className="text-sm text-muted-foreground">{result.match_class}</p>
+                        </div>
+                        {result.message && (
+                          <div className="mt-3 pt-3 border-t border-rose-200/50 dark:border-rose-800/50">
+                            <p className="text-xs text-muted-foreground italic">{result.message}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         )}
 
         <div className="mt-8 flex items-center justify-center gap-4 text-sm">

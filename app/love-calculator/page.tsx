@@ -42,7 +42,6 @@ export default function LoveCalculatorPage() {
       if (error) throw error
       setCalculations(data || [])
     } catch (err) {
-      console.error("Error loading calculations:", err)
       // Fallback to localStorage if Supabase fails
       const saved = localStorage.getItem("loveCalculations")
       if (saved) {
@@ -99,7 +98,6 @@ export default function LoveCalculatorPage() {
           setCalculations([newCalculation, ...calculations])
         }
       } catch (err) {
-        console.error("Error saving calculation:", err)
         // Fallback: save locally if Supabase fails
         const newCalculation: LoveCalculation = {
           name1,

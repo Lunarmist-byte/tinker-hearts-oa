@@ -31,15 +31,26 @@ type LoveCalculation = {
   created_at?: string
 }
 
+type MatchResult = {
+  id: string
+  name: string
+  class: string
+  match_name: string
+  match_class: string
+  message?: string
+  created_at: string
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [error, setError] = useState("")
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loveCalculations, setLoveCalculations] = useState<LoveCalculation[]>([])
+  const [matchResults, setMatchResults] = useState<MatchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"hearts" | "love">("hearts")
+  const [activeTab, setActiveTab] = useState<"hearts" | "love" | "results">("hearts")
 
   const ADMIN_PASSWORD = "kukudukozhi@2022"
 
@@ -50,6 +61,7 @@ export default function AdminPage() {
       setError("")
       loadSubmissions()
       loadLoveCalculations()
+      loadMatchResults()
     } else {
       setError("Incorrect password")
     }
@@ -67,7 +79,7 @@ export default function AdminPage() {
       if (error) throw error
       setSubmissions(data || [])
     } catch (err) {
-      console.error("Error loading submissions:", err)
+      // Handle error silently
     } finally {
       setLoading(false)
     }
@@ -84,7 +96,6 @@ export default function AdminPage() {
       if (error) throw error
       setLoveCalculations(data || [])
     } catch (err) {
-      console.error("Error loading love calculations:", err)
       // Fallback to localStorage if Supabase fails
       try {
         const saved = localStorage.getItem("loveCalculations")
@@ -92,8 +103,23 @@ export default function AdminPage() {
           setLoveCalculations(JSON.parse(saved))
         }
       } catch (e) {
-        console.error("Error loading from localStorage:", e)
+        // Handle error silently
       }
+    }
+  }
+
+  const loadMatchResults = async () => {
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from("match_results")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      setMatchResults(data || [])
+    } catch (err) {
+      // Handle error silently
     }
   }
 
@@ -145,7 +171,6 @@ export default function AdminPage() {
 
       setSubmissions((prev) => prev.filter((sub) => sub.id !== id))
     } catch (err) {
-      console.error("Error deleting submission:", err)
       alert("Failed to delete submission")
     } finally {
       setDeleting(null)
@@ -168,7 +193,6 @@ export default function AdminPage() {
       setSubmissions([])
       alert("All submissions deleted successfully")
     } catch (err) {
-      console.error("Error deleting all submissions:", err)
       alert("Failed to delete all submissions")
     } finally {
       setLoading(false)
@@ -180,6 +204,7 @@ export default function AdminPage() {
       const interval = setInterval(() => {
         loadSubmissions()
         loadLoveCalculations()
+        loadMatchResults()
       }, 30000) // Refresh every 30s
       return () => clearInterval(interval)
     }
@@ -265,11 +290,13 @@ export default function AdminPage() {
           <div className="flex items-center gap-3">
             {activeTab === "hearts" ? (
               <Heart className="w-8 h-8 text-rose-400 fill-rose-400" />
-            ) : (
+            ) : activeTab === "love" ? (
               <Sparkles className="w-8 h-8 text-rose-400" />
+            ) : (
+              <Heart className="w-8 h-8 text-rose-400 fill-rose-400" />
             )}
             <h1 className="text-4xl font-bold bg-gradient-to-r from-rose-400 via-pink-500 to-purple-600 bg-clip-text text-transparent">
-              {activeTab === "hearts" ? "Tinker Hearts Admin" : "Love Calculator Admin"}
+              {activeTab === "hearts" ? "Tinker Hearts Admin" : activeTab === "love" ? "Love Calculator Admin" : "Match Results Admin"}
             </h1>
           </div>
           <div className="flex gap-3">
@@ -333,10 +360,21 @@ export default function AdminPage() {
             <Sparkles className="w-4 h-4 inline mr-2" />
             Love Calculator ({loveCalculations.length})
           </button>
+          <button
+            onClick={() => setActiveTab("results")}
+            className={`pb-3 px-4 font-semibold transition-colors ${
+              activeTab === "results"
+                ? "text-rose-600 dark:text-rose-400 border-b-2 border-rose-400"
+                : "text-muted-foreground hover:text-rose-500"
+            }`}
+          >
+            <Heart className="w-4 h-4 inline mr-2" />
+            Match Results ({matchResults.length})
+          </button>
         </div>
 
         {/* Stats */}
-        {activeTab === "hearts" ? (
+        {activeTab === "hearts" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <Card className="border-rose-200/50">
               <CardContent className="pt-6">
@@ -368,7 +406,9 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
-        ) : (
+        )}
+
+        {activeTab === "love" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <Card className="border-rose-200/50">
               <CardContent className="pt-6">
@@ -397,7 +437,7 @@ export default function AdminPage() {
         )}
 
         {/* Content */}
-        {activeTab === "hearts" ? (
+        {activeTab === "hearts" && (
           <div className="space-y-4">
             {submissions.length === 0 ? (
               <Card className="border-rose-200/50">
@@ -460,7 +500,10 @@ export default function AdminPage() {
               ))
             )}
           </div>
-        ) : (
+        )}
+
+        {/* Love Calculator Tab */}
+        {activeTab === "love" && (
           <div className="space-y-4">
             {loveCalculations.length === 0 ? (
               <Card className="border-rose-200/50">
@@ -501,6 +544,58 @@ export default function AdminPage() {
                   </CardContent>
                 </Card>
               ))
+            )}
+          </div>
+        )}
+
+        {/* Results Tab */}
+        {activeTab === "results" && (
+          <div className="space-y-6">
+            {matchResults.length === 0 ? (
+              <Card className="border-rose-200/50">
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <p>No match results available yet.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <Card className="border-rose-200/50 bg-rose-50/50 dark:bg-rose-950/30">
+                  <CardContent className="pt-6">
+                    <p className="text-lg font-semibold text-rose-700 dark:text-rose-300">
+                      Total Matches: {matchResults.length}
+                    </p>
+                  </CardContent>
+                </Card>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {matchResults.map((result) => (
+                    <Card key={result.id} className="border-rose-200/50 hover:border-rose-300 transition-colors h-full">
+                      <CardContent className="pt-6 space-y-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Person</p>
+                          <p className="font-bold text-rose-700 dark:text-rose-300">{result.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Class</p>
+                          <p className="text-sm text-muted-foreground">{result.class}</p>
+                        </div>
+                        <div className="border-t border-rose-200/50 dark:border-rose-800/50 pt-3">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Matched With</p>
+                          <p className="font-bold text-rose-600 dark:text-rose-400">{result.match_name}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">Class</p>
+                          <p className="text-sm text-muted-foreground">{result.match_class}</p>
+                        </div>
+                        {result.message && (
+                          <div className="mt-3 pt-3 border-t border-rose-200/50 dark:border-rose-800/50">
+                            <p className="text-xs text-muted-foreground italic">{result.message}</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}

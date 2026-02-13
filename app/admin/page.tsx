@@ -51,7 +51,6 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"hearts" | "love" | "results">("hearts")
-  const [uploadingCSV, setUploadingCSV] = useState(false)
 
   const ADMIN_PASSWORD = "kukudukozhi@2022"
 
@@ -65,81 +64,6 @@ export default function AdminPage() {
       loadMatchResults()
     } else {
       setError("Incorrect password")
-    }
-  }
-
-  const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingCSV(true)
-    try {
-      const text = await file.text()
-      const lines = text.split("\n").filter((line) => line.trim())
-
-      // Parse CSV with proper quote handling
-      const results: Array<{
-        name: string
-        class: string
-        match_name: string
-        match_class: string
-        message?: string
-      }> = []
-
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim()
-        if (!line) continue
-
-        // Parse CSV line handling quoted values
-        const fields: string[] = []
-        let current = ""
-        let insideQuotes = false
-
-        for (let j = 0; j < line.length; j++) {
-          const char = line[j]
-          if (char === '"') {
-            insideQuotes = !insideQuotes
-          } else if (char === "," && !insideQuotes) {
-            fields.push(current.trim().replace(/^"|"$/g, ""))
-            current = ""
-          } else {
-            current += char
-          }
-        }
-        fields.push(current.trim().replace(/^"|"$/g, ""))
-
-        const [name, class_, match_name, match_class, message] = fields
-        if (name && class_ && match_name && match_class) {
-          results.push({
-            name: name.trim(),
-            class: class_.trim(),
-            match_name: match_name.trim(),
-            match_class: match_class.trim(),
-            message: message?.trim() || undefined,
-          })
-        }
-      }
-
-      // Clear existing results first
-      const supabase = createClient()
-      await supabase.from("match_results").delete().neq("id", "00000000-0000-0000-0000-000000000000")
-
-      // Insert new results
-      const { error } = await supabase.from("match_results").insert(results)
-
-      if (error) {
-        console.error("[v0] Supabase insert error:", error)
-        throw error
-      }
-
-      alert(`Successfully uploaded ${results.length} match results!`)
-      await loadMatchResults()
-    } catch (err) {
-      console.error("[v0] Error uploading CSV:", err)
-      alert("Error uploading CSV. Please check the format and try again.")
-    } finally {
-      setUploadingCSV(false)
-      e.target.value = ""
     }
   }
 
@@ -629,31 +553,7 @@ export default function AdminPage() {
 
         {/* Results Tab */}
         {activeTab === "results" && (
-          <div className="space-y-6">
-            {/* CSV Upload Section */}
-            <Card className="border-rose-200/50">
-              <CardHeader>
-                <CardTitle className="text-2xl">Upload Match Results</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Upload a CSV file with columns: name, class, match_name, match_class, message
-                </p>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleCSVUpload}
-                    disabled={uploadingCSV}
-                    className="flex-1 p-2 border-2 border-dashed border-rose-300 rounded-lg cursor-pointer"
-                  />
-                  {uploadingCSV && <p className="text-sm text-muted-foreground">Uploading...</p>}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Results Display */}
-            <div className="space-y-4">
+          <div className="space-y-4">
               {matchResults.length === 0 ? (
                 <Card className="border-rose-200/50">
                   <CardContent className="py-12 text-center text-muted-foreground">
@@ -696,7 +596,6 @@ export default function AdminPage() {
                 ))
               )}
             </div>
-          </div>
         )}
 
         <div className="mt-8 flex items-center justify-center gap-4 text-sm">

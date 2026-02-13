@@ -79,7 +79,7 @@ export default function AdminPage() {
       if (error) throw error
       setSubmissions(data || [])
     } catch (err) {
-      console.error("Error loading submissions:", err)
+      // Handle error silently
     } finally {
       setLoading(false)
     }
@@ -96,7 +96,6 @@ export default function AdminPage() {
       if (error) throw error
       setLoveCalculations(data || [])
     } catch (err) {
-      console.error("Error loading love calculations:", err)
       // Fallback to localStorage if Supabase fails
       try {
         const saved = localStorage.getItem("loveCalculations")
@@ -104,7 +103,7 @@ export default function AdminPage() {
           setLoveCalculations(JSON.parse(saved))
         }
       } catch (e) {
-        console.error("Error loading from localStorage:", e)
+        // Handle error silently
       }
     }
   }
@@ -120,7 +119,7 @@ export default function AdminPage() {
       if (error) throw error
       setMatchResults(data || [])
     } catch (err) {
-      console.error("[v0] Error loading match results:", err)
+      // Handle error silently
     }
   }
 
@@ -172,7 +171,6 @@ export default function AdminPage() {
 
       setSubmissions((prev) => prev.filter((sub) => sub.id !== id))
     } catch (err) {
-      console.error("Error deleting submission:", err)
       alert("Failed to delete submission")
     } finally {
       setDeleting(null)
@@ -195,7 +193,6 @@ export default function AdminPage() {
       setSubmissions([])
       alert("All submissions deleted successfully")
     } catch (err) {
-      console.error("Error deleting all submissions:", err)
       alert("Failed to delete all submissions")
     } finally {
       setLoading(false)

@@ -62,7 +62,6 @@ export default function ResultsPage() {
         setTimeout(() => setRevealed(true), 500)
       }
     } catch (err) {
-      console.error("[v0] Error searching match:", err)
       setError("An error occurred. Please try again.")
     } finally {
       setSearching(false)

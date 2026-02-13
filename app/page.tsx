@@ -44,7 +44,6 @@ export default function Page() {
     
     // Validate form data
     if (!formData.name.trim() || !formData.gender || !formData.targetGender || !formData.pickupLine.trim() || !formData.class.trim()) {
-      console.error("[v0] Form validation failed: missing required fields")
       return
     }
 
@@ -52,7 +51,6 @@ export default function Page() {
 
     try {
       const supabase = createClient()
-      console.log("[v0] Submitting form data:", { ...formData })
       
       const { error } = await supabase.from("tinker_hearts_submissions").insert({
         name: formData.name.trim(),
@@ -63,11 +61,9 @@ export default function Page() {
       })
 
       if (error) {
-        console.error("[v0] Supabase error:", error)
         throw error
       }
       
-      console.log("[v0] Form submitted successfully")
       setSuccess(true)
       setFormData({
         name: "",
@@ -77,7 +73,7 @@ export default function Page() {
         class: "",
       })
     } catch (error) {
-      console.error("[v0] Error submitting form:", error instanceof Error ? error.message : String(error))
+      // Silently handle error
     } finally {
       setIsSubmitting(false)
     }
